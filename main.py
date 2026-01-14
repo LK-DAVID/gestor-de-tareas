@@ -1,5 +1,35 @@
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ARCHIVO = os.path.join(BASE_DIR, "tareas.txt")
+
+
+def cargar_tareas():
+    tareas = []
+
+    try:
+        with open(ARCHIVO, "r", encoding="utf-8") as archivo:
+            for linea in archivo:
+                texto, estado = linea.strip().split("|")
+                tareas.append({
+                    "texto": texto,
+                    "completada": estado == "1"
+                })
+    except FileNotFoundError:
+        pass
+
+    return tareas
+
+
+def guardar_tareas(tareas):
+    with open(ARCHIVO, "w", encoding="utf-8") as archivo:
+        for tarea in tareas:
+            estado = "1" if tarea["completada"] else "0"
+            archivo.write(f"{tarea['texto']}|{estado}\n")
+
+
 def mostrar_menu():
-    print("\n GESTOR DE TAREAS")
+    print("\n📋 GESTOR DE TAREAS")
     print("1. Ver tareas")
     print("2. Agregar tarea")
     print("3. Completar tarea")
@@ -25,7 +55,9 @@ def agregar_tarea(tareas):
         "completada": False
     }
     tareas.append(tarea)
-    print("Tarea agregada.")
+    guardar_tareas(tareas)
+    print("✅ Tarea agregada.")
+
 
 def completar_tarea(tareas):
     if len(tareas) == 0:
@@ -43,10 +75,11 @@ def completar_tarea(tareas):
             return
 
         if tareas[indice]["completada"]:
-            print("⚠️ Esta tarea ya está completada.")
+            print("⚠️  Esta tarea ya está completada.")
             return
 
         tareas[indice]["completada"] = True
+        guardar_tareas(tareas)
         print("✅ Tarea marcada como completada.")
 
     except ValueError:
@@ -69,13 +102,15 @@ def eliminar_tarea(tareas):
             return
 
         tareas.pop(indice)
+        guardar_tareas(tareas)
         print("🗑️ Tarea eliminada.")
 
     except ValueError:
         print("Debes ingresar un número.")
 
+
 def main():
-    tareas = []
+    tareas = cargar_tareas()
 
     while True:
         mostrar_menu()
@@ -94,10 +129,12 @@ def main():
             eliminar_tarea(tareas)
 
         elif opcion == "0":
-            print("Saliendo del gestor de tareas.")
+            print("👋 Saliendo del gestor de tareas.")
             break
 
         else:
             print("❌ Opción inválida.")
 
+
 main()
+
